@@ -398,6 +398,35 @@ The following custom template functions are available in addition to Go's built-
 
 See the linked examples for usage details.
 
+## Fork Customizations
+
+This fork of [crossplane-contrib/function-go-templating][upstream-repo] includes the following customizations:
+
+### Custom Sprig Fork
+
+This project uses a [custom fork of Sprig][sprig-fork] that adds support for the `uuidv7` template function. This fork is used because the upstream Sprig project has limited maintainer availability for accepting new features.
+
+#### uuidv7 Function
+
+Generates a [UUIDv7][rfc-9562] - a time-ordered UUID that embeds a timestamp with millisecond precision:
+
+```yaml
+apiVersion: s3.aws.upbound.io/v1beta1
+kind: Bucket
+metadata:
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: bucket
+  name: bucket-{{ uuidv7 }}
+spec:
+  forProvider:
+    region: us-east-1
+```
+
+UUIDv7 values are:
+- Sortable by creation time
+- Globally unique
+- Useful for database primary keys and resource naming
+
 ## Developing this function
 
 This function uses [Go][go], [Docker][docker], and the [Crossplane CLI][cli] to
@@ -428,3 +457,6 @@ $ crossplane xpkg build -f package --embed-runtime-image=runtime
 [cli]: https://docs.crossplane.io/latest/cli
 [extra-resources]: https://docs.crossplane.io/latest/concepts/composition-functions/#how-composition-functions-work
 [Connection Details Compositions guide]: https://docs.crossplane.io/latest/guides/connection-details-composition/
+[upstream-repo]: https://github.com/crossplane-contrib/function-go-templating
+[sprig-fork]: https://github.com/dennispidun/sprig
+[rfc-9562]: https://www.rfc-editor.org/rfc/rfc9562
