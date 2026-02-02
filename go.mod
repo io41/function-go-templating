@@ -19,7 +19,7 @@ require (
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.1 // indirect
+	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
-	github.com/spf13/cast v1.7.0 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spf13/cobra v1.10.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
@@ -92,3 +92,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/Masterminds/sprig/v3 => github.com/dennispidun/sprig/v3 v3.0.0-20260129104358-e6a2d8ec1f5a

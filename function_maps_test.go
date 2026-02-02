@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"regexp"
 	"testing"
 	"text/template"
 
+	sprig "github.com/Masterminds/sprig/v3"
 	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -747,5 +749,73 @@ func Test_getCredentialData(t *testing.T) {
 				t.Errorf("%s\ngetCredentialData(...): -want data, +got data:\n%s", tc.reason, diff)
 			}
 		})
+	}
+}
+
+func Test_sprigFuncMapContainsUUIDv7(t *testing.T) {
+	funcs := sprig.FuncMap()
+	if _, ok := funcs["uuidv7"]; !ok {
+		t.Error("sprig.FuncMap() should contain 'uuidv7' function")
+	}
+}
+
+func Test_uuidv7TemplateExecution(t *testing.T) {
+	tpl := GetNewTemplateWithFunctionMaps(nil)
+	tpl, err := tpl.Parse("{{ uuidv7 }}")
+	if err != nil {
+		t.Fatalf("template should parse, got error: %v", err)
+	}
+
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, nil)
+	if err != nil {
+		t.Errorf("template execution should succeed, got error: %v", err)
+	}
+	if buf.Len() == 0 {
+		t.Error("uuidv7 should return a non-empty string")
+	}
+}
+
+func Test_uuidv7Format(t *testing.T) {
+	tpl := GetNewTemplateWithFunctionMaps(nil)
+	tpl, err := tpl.Parse("{{ uuidv7 }}")
+	if err != nil {
+		t.Fatalf("template should parse: %v", err)
+	}
+
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, nil)
+	if err != nil {
+		t.Fatalf("template execution failed: %v", err)
+	}
+
+	result := buf.String()
+	// UUIDv7 format: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx
+	// where y is 8, 9, a, or b (variant bits)
+	uuidv7Regex := regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+	if !uuidv7Regex.MatchString(result) {
+		t.Errorf("uuidv7 output should match UUIDv7 format, got: %s", result)
+	}
+}
+
+func Test_uuidv7Uniqueness(t *testing.T) {
+	tpl := GetNewTemplateWithFunctionMaps(nil)
+	tpl, err := tpl.Parse("{{ uuidv7 }}")
+	if err != nil {
+		t.Fatalf("template should parse: %v", err)
+	}
+
+	seen := make(map[string]bool)
+	for range 100 {
+		var buf bytes.Buffer
+		err = tpl.Execute(&buf, nil)
+		if err != nil {
+			t.Fatalf("template execution failed: %v", err)
+		}
+		uuid := buf.String()
+		if seen[uuid] {
+			t.Errorf("uuidv7 should generate unique values, got duplicate: %s", uuid)
+		}
+		seen[uuid] = true
 	}
 }
