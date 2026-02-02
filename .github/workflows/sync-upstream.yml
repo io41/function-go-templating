@@ -78,9 +78,21 @@ jobs:
             echo "status=success" >> $GITHUB_OUTPUT
           else
             echo "status=conflict" >> $GITHUB_OUTPUT
-            # Stage conflict markers so we can push and show in PR
+            # List conflicting files for the PR body
+            CONFLICT_FILES=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
+            echo "conflict_files=$CONFLICT_FILES" >> $GITHUB_OUTPUT
+            # Stage conflict markers so we can push and create draft PR
             git add -A
-            git commit -m "WIP: Merge with conflicts from upstream" || true
+            git commit -m "DO NOT MERGE - contains conflict markers
+
+This commit contains unresolved merge conflicts with markers:
+<<<<<<< HEAD
+=======
+>>>>>>> upstream/main
+
+Files with conflicts: $CONFLICT_FILES
+
+Resolve conflicts locally before merging." || true
           fi
 
       - name: Analyze changes
@@ -135,6 +147,7 @@ jobs:
             const sprigChanged = '${{ steps.analyze.outputs.sprig_changed }}' === 'true';
             const ciChanged = '${{ steps.analyze.outputs.ci_changed }}' === 'true';
             const commitSummary = `${{ steps.analyze.outputs.commit_summary }}`;
+            const conflictFiles = '${{ steps.merge.outputs.conflict_files }}';
 
             const isDraft = mergeStatus === 'conflict';
 
@@ -174,18 +187,25 @@ jobs:
             let warnings = '';
             if (mergeStatus === 'conflict') {
               warnings += `
-            ## ⚠️ Merge Conflicts Detected
+            ## 🚨 DO NOT MERGE - Contains Conflict Markers
 
-            This PR has merge conflicts that need manual resolution. The conflicting files have been committed with conflict markers.
+            This PR contains **raw git conflict markers** (\`<<<<<<<\`, \`=======\`, \`>>>>>>>\`) that must be resolved before merging.
 
-            To resolve:
+            **Files with conflicts:** \`${conflictFiles || 'unknown'}\`
+
+            ### How to resolve:
             \`\`\`bash
             git fetch origin ${{ steps.branch.outputs.branch_name }}
             git checkout ${{ steps.branch.outputs.branch_name }}
-            # Resolve conflicts in your editor
+
+            # Reset the merge and redo it locally
+            git reset --hard HEAD~1
+            git merge upstream/${{ env.UPSTREAM_BRANCH }}
+
+            # Resolve conflicts in your editor, then:
             git add .
-            git commit -m "Resolve merge conflicts"
-            git push
+            git commit -m "Merge upstream with resolved conflicts"
+            git push --force-with-lease
             \`\`\`
             `;
             }
