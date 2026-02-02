@@ -85,14 +85,14 @@ jobs:
             git add -A
             git commit -m "DO NOT MERGE - contains conflict markers
 
-This commit contains unresolved merge conflicts with markers:
-<<<<<<< HEAD
-=======
->>>>>>> upstream/main
+            This commit contains unresolved merge conflicts with markers:
+            <<<<<<< HEAD
+            =======
+            >>>>>>> upstream/main
 
-Files with conflicts: $CONFLICT_FILES
+            Files with conflicts: $CONFLICT_FILES
 
-Resolve conflicts locally before merging." || true
+            Resolve conflicts locally before merging." || true
           fi
 
       - name: Analyze changes
