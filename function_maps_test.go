@@ -6,13 +6,13 @@ import (
 	"testing"
 	"text/template"
 
+	sprig "github.com/Masterminds/sprig/v3"
 	v1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/testing/protocmp"
 
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
-	sprig "github.com/Masterminds/sprig/v3"
 )
 
 func Test_fromYaml(t *testing.T) {
@@ -806,7 +806,7 @@ func Test_uuidv7Uniqueness(t *testing.T) {
 	}
 
 	seen := make(map[string]bool)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		var buf bytes.Buffer
 		err = tpl.Execute(&buf, nil)
 		if err != nil {
